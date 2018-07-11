@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cmath>
 #include <opencv2\opencv.hpp>
-#include "PFM.h"
 #include <string>
 #include <vector>
 #include <time.h>
@@ -15,8 +14,8 @@ int main()
 	cv::Mat D_ref = cv::imread("depth.bmp");
 	cv::cvtColor(D_ref, D_ref, CV_RGB2GRAY);
 
-	cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3);
-	cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U);
+	cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3,cv::Scalar(0,0,0));
+	cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U,cv::Scalar(0));
 
 	//cv::imshow("I_ref", D_ref);
 
