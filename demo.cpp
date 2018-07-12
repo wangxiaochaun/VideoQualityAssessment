@@ -24,7 +24,7 @@ int main()
 
 	clock_t start = clock();
 
-	test.Fehn_interpolation(I_ref, D_ref, I_syn, D_syn);
+	test.Tanimoto(I_ref, D_ref, I_syn, D_syn);
 
 	clock_t ends = clock();
 

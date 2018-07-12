@@ -14,4 +14,5 @@ public:
 	bool Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);				//A5
 
 	bool warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);
+	const cv::Mat mask_detection(const cv::Mat & input);
 };
