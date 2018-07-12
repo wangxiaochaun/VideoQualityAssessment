@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cmath>
 #include <opencv2\opencv.hpp>
-#include "PFM.h"
 #include <string>
 #include <vector>
 #include <time.h>
@@ -24,7 +23,7 @@ int main()
 
 	clock_t start = clock();
 
-	test.Tanimoto(I_ref, D_ref, I_syn, D_syn);
+	test.Ndijiki(I_ref, D_ref, I_syn, D_syn);
 
 	clock_t ends = clock();
 
