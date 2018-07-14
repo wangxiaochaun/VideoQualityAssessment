@@ -4,14 +4,14 @@
 
 bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
-	// ÕâÀï¸Ä±äÁË´«Èë²Î¿¼ÊÓµãÉî¶ÈÍ¼ÏñµÄÀàÐÍ£¨Ç°ÌáÊÇÉî¶ÈÍ¼ÊÇµ¥Í¨µÀµÄ£©
+	// ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½Ë´ï¿½ï¿½ï¿½Î¿ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½Çµï¿½Í¨ï¿½ï¿½ï¿½Ä£ï¿½
 
 	cv::GaussianBlur(D_ref, D_ref, cv::Size(3, 3), 0, 0);
 
 	warping_1d(I_ref, D_ref, I_syn, D_syn);
 
-	// ²Ã¼ôµô±ß¿ò
-	int s = 25; // Ä¬ÈÏ²Ã¼ôµôµÄ±ßµÄ¿í¶È
+	// ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ß¿ï¿½
+	int s = 25; // Ä¬ï¿½Ï²Ã¼ï¿½ï¿½ï¿½ï¿½Ä±ßµÄ¿ï¿½ï¿½
 	cv::Rect myROI(s, 0, I_syn.size().width - 2 * s, I_syn.size().height);
 
 	cv::Mat mask;
@@ -21,7 +21,7 @@ bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref,
 	cv::resize(mask, mask, I_syn.size(), 0, 0, cv::INTER_NEAREST);
 
 	cv::medianBlur(mask, mask, 3);
-	cv::imshow("mask", mask);
+//	cv::imshow("mask", mask);
 
 	mask.copyTo(I_syn);
 
@@ -30,7 +30,7 @@ bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref,
 
 bool algorithm::warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
-	// ÊäÈëÉî¶ÈÍ¼±ØÐëÊÇµ¥Í¨µÀµÄ£¬ÒòÎªÎÒ²»»áÐ´Í¨µÀ¼ì²é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½Í¨ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Îªï¿½Ò²ï¿½ï¿½ï¿½Ð´Í¨ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	std::vector<int> table(256);
 
@@ -72,7 +72,7 @@ bool algorithm::warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat
 		}
 
 	// test
-	cv::imshow("texture", I_syn);
+	//cv::imshow("texture", I_syn);
 	//cv::imshow("depth", D_syn);
 
 	return true;

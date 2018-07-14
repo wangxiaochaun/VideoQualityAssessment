@@ -1,34 +1,48 @@
 #include <iostream>
 #include <cmath>
-#include <opencv2\opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
 #include <time.h>
 #include "hole_filling.h"
+#include "A6.h"
 
 using namespace std;
 
 int main()
 {
-	cv::Mat I_ref = cv::imread("texture.bmp");
-	cv::Mat D_ref = cv::imread("depth.bmp");
-	cv::cvtColor(D_ref, D_ref, CV_RGB2GRAY);
 
-	cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3,cv::Scalar(0,0,0));
-	cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U,cv::Scalar(0));
+    A6 A6("../BookArrival_Cam08.mkv","../BookArrival_Cam08_Depth.mkv");
 
-	//cv::imshow("I_ref", D_ref);
-
-	algorithm test;
+	//algorithm test;
 
 	clock_t start = clock();
 
-	test.Fehn_interpolation(I_ref, D_ref, I_syn, D_syn);
+    cv::VideoCapture cap_texture;
+    cv::VideoCapture cap_depth;
 
-	clock_t ends = clock();
+    cap_texture.open("../BookArrival_Cam08.mkv");
+    cap_depth.open("../BookArrival_Cam08_Depth.mkv");
 
-	std::cout << "Running time of 3D warping (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
-	
+    //read every frame and then change warping and get the D and I sprite
+    int frame_num = cap_texture.get(cv::CAP_PROP_FRAME_COUNT);
 
-	cv::waitKey(0);
+    cv::Mat t_frame;
+    cv::Mat d_frame;
+    cv::Mat I_out;
+
+    for(int i=0;i<1;i++){
+
+        cap_texture>>t_frame;
+        cap_depth>>d_frame;
+        cv::cvtColor(d_frame, d_frame, CV_RGB2GRAY);
+
+        I_out = A6.A6Porcess(t_frame,d_frame);
+
+    }
+
+    cap_texture.release();
+    cap_depth.release();
+
+
 }
