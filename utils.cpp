@@ -94,31 +94,31 @@ void element::showVideo()
 	}
 }
 
-cv::Mat element::getPatch(const cv::Mat & image,const cv::Point& p,int RADIUS){
-assert(RADIUS <= p.x && p.x <image.cols-RADIUS && RADIUS <= p.y && p.y < image.rows-RADIUS);
+cv::Mat element::getPatch(const cv::Mat & image,const cv::Point& p,int radius){
+assert(radius <= p.x && p.x <image.cols-radius && radius <= p.y && p.y < image.rows-radius);
 
-return image(cv::Range(p.y-RADIUS,p.y+RADIUS+1),cv::Range(p.x-RADIUS,p.x+RADIUS+1));
+return image(cv::Range(p.y-radius,p.y+radius+1),cv::Range(p.x-radius,p.x+radius+1));
 
 }
 
-std::vector<cv::Point> element::FindPoint(cv::Point &p,int width, int height,int range,int RADIUS){
-//give a point to calculate the around point of the Radius
+std::vector<cv::Point> element::FindPoint(cv::Point &p,int width, int height,int range,int radius){
+//give a point to calculate the around point of the radius
 std::vector<cv::Point> pointList ;
 
 assert(range%2 !=0 );
 
-int startX =  p.x - ((range-1)/2)*RADIUS;
-int stratY = p.y - ((range-1)/2)*RADIUS;
+int startX =  p.x - ((range-1)/2)*radius;
+int stratY = p.y - ((range-1)/2)*radius;
 
-int startX_end = startX + RADIUS*(range-1);
-int startY_end = stratY + RADIUS*(range-1);
+int startX_end = startX + radius*(range-1);
+int startY_end = stratY + radius*(range-1);
 
 
-for(;startX<=startX_end;startX+=RADIUS){
-for(stratY = p.y - ((range-1)/2)*RADIUS;stratY<=startY_end;stratY+=RADIUS){
-if(startX > width -RADIUS || stratY > height -RADIUS) continue;
+for(;startX<=startX_end;startX+=radius){
+for(stratY = p.y - ((range-1)/2)*radius;stratY<=startY_end;stratY+=radius){
+if(startX > width -radius || stratY > height -radius) continue;
 if(startX == p.x && stratY ==p.y) continue;
-if(startX < RADIUS || stratY <RADIUS)continue;
+if(startX < radius || stratY <radius)continue;
 pointList.push_back(cv::Point(startX,stratY));
 }
 }

@@ -24,8 +24,8 @@ public:
 	void writeVideo(std::string texture_filename, std::string depth_filename);
 	void processVideo(const int distance, const int type);
 	const int getFrame() { return frame; }
-	cv::Mat getPatch(const cv::Mat & image,const cv::Point& p,int RADIUS);
-	std::vector<cv::Point> FindPoint(cv::Point &p,int with, int height,int range,int RADIUS);
+	cv::Mat getPatch(const cv::Mat & image,const cv::Point& p,int radius);
+	std::vector<cv::Point> FindPoint(cv::Point &p,int with, int height,int range,int radius);
 
 private:
 	video texture_video, depth_video;
