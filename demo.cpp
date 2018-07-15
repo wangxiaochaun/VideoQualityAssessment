@@ -11,16 +11,6 @@ using namespace std;
 
 int main()
 {
-<<<<<<< HEAD
-    element aaaa;
-    int tv_height, tv_width, dv_height, dv_width;
-    int tv_frame, dv_frame;
-    aaaa.readVideo("balloons_x264_qp14.mkv", "depth_balloons_x264_qp34.mkv");
-    aaaa.processVideo(50, A1); //25, 50
-    aaaa.writeVideo("balloons_x264_qp14_50.avi", "depth_balloons_x264_qp34_50.avi");
-
-    system("pause");
-=======
 	element aaaa;
 	int tv_height, tv_width, dv_height, dv_width;
 	int tv_frame, dv_frame;
@@ -29,5 +19,4 @@ int main()
 	aaaa.writeVideo("balloons_x264_qp14_50.avi", "depth_balloons_x264_qp34_50.avi");
 	
 	system("pause");
->>>>>>> upstream/master
 }
