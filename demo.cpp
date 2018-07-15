@@ -5,30 +5,18 @@
 #include <vector>
 #include <time.h>
 #include "hole_filling.h"
+#include "utils.h"
 
 using namespace std;
 
 int main()
 {
-	cv::Mat I_ref = cv::imread("texture.bmp");
-	cv::Mat D_ref = cv::imread("depth.bmp");
-	cv::cvtColor(D_ref, D_ref, CV_RGB2GRAY);
-
-	cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3);
-	cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U);
-
-	//cv::imshow("I_ref", D_ref);
-
-	algorithm test;
-
-	clock_t start = clock();
-
-	test.Ndijiki(I_ref, D_ref, I_syn, D_syn);
-
-	clock_t ends = clock();
-
-	std::cout << "Running time of 3D warping (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+	element aaaa;
+	int tv_height, tv_width, dv_height, dv_width;
+	int tv_frame, dv_frame;
+	aaaa.readVideo("balloons_x264_qp14.mkv", "depth_balloons_x264_qp34.mkv");
+	aaaa.processVideo(50, A1); //25, 50
+	aaaa.writeVideo("balloons_x264_qp14_50.avi", "depth_balloons_x264_qp34_50.avi");
 	
-
-	cv::waitKey(0);
+	system("pause");
 }

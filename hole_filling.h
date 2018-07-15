@@ -8,10 +8,16 @@
 #define RADIUS 32
 // The maximum number of pixels aroud a specified point on the target outline
 #define BORDER_RADIUS 4
+// Direction 0-left, 1-right
+#define WARPING_LEFT -1
+#define WARPING_RIGHT 1
+
 
 class algorithm
 {
 public:
+	algorithm() { distance = 0; }
+	algorithm(int distance) { this->distance = distance; }
 
 	typedef std::vector<std::vector<cv::Point>> contours_t;
 	typedef std::vector<cv::Vec4i> hierarchy_t;
@@ -52,4 +58,14 @@ public:
 	bool warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);
 	
 	const cv::Mat mask_detection(const cv::Mat & input);
+
+private:
+	int distance;
+	//int direction;
+
+	void setDistance(const int distance) { this->distance = distance; }
+	//void setDirection(const int direction) { this->direction = direction; }
+public:
+	const int getDistance() { return this->distance; }
+	//const int getDirection() { return this->direction; }
 };

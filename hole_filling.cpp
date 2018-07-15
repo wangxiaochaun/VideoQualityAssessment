@@ -275,16 +275,41 @@ bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref,
 	int s = 25; // 默认裁剪掉的边的宽度
 	cv::Rect myROI(s, 0, I_syn.size().width - 2 * s, I_syn.size().height);
 
-	cv::Mat mask;
+	cv::Mat texture_mask, depth_mask;
 
-	I_syn(myROI).copyTo(mask);
+	// 颜色图和深度图都裁剪掉边框
+	I_syn(myROI).copyTo(texture_mask);
+	D_syn(myROI).copyTo(depth_mask);
 
-	cv::resize(mask, mask, I_syn.size(), 0, 0, cv::INTER_NEAREST);
+	cv::resize(texture_mask, texture_mask, I_syn.size(), 0, 0, cv::INTER_NEAREST);
+	cv::resize(depth_mask, depth_mask, D_syn.size(), 0, 0, cv::INTER_NEAREST);
 
-	cv::medianBlur(mask, mask, 3);
-	cv::imshow("mask", mask);
+	cv::medianBlur(texture_mask, texture_mask, 3);
+	//cv::imshow("mask", mask);
 
-	mask.copyTo(I_syn);
+	texture_mask.copyTo(I_syn);
+	depth_mask.copyTo(D_syn);
+
+	cv::Size size = I_syn.size();
+
+	if (getDistance() > 0)
+		for (int i = 0; i < size.height; i++)
+			for (int j = 0; j < size.width; j++)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
+				{
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
+				}
+			}
+	else
+		for (int i = 0; i < size.height; i++)
+			for (int j = size.width - 1; j >= 0; j--)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
+				{
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 1);
+				}
+			}
 
 	return true;
 }
@@ -510,26 +535,31 @@ bool algorithm::warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat
 
 	std::vector<int> table(256);
 
-	int knear = 0;
-	int kfar = 128;
-	int eye_seperation = 6;
-	int view_distance = -800; //越小baseline越大，补洞的差异性越好，但是相应的，inpainting花销越大。=200的时候，telea算法
-	int Npix = 320;
-	int S = -25;
+	double knear, kfar;
+	cv::Point pnear, pfar;
+	cv::minMaxLoc(D_ref, &kfar, &knear, &pfar, &pnear);
+
+	//knear = 255; kfar = 0;
+
+	//test
+	std::cout << knear << " " << kfar << std::endl;
+
+	int view_distance = getDistance(); //越小baseline越大，补洞的差异性越好，但是相应的，inpainting花销越大。=200的时候，telea算法
+	int S = 0;
 	cv::Size size = I_ref.size();
 	//cout << size.height << " " << size.width << endl;
 	float A, h;
 
 	for (int i = 0; i < 256; i++)
 	{
-		A = i * (knear / 64 + kfar / 16) / 255.0;
-		h = -eye_seperation * Npix * (A - kfar / 16) / view_distance;
-		table[i] = static_cast<int>(h / 2);
+		A = static_cast<float>(i - kfar) / (knear - kfar);
+		h = A * view_distance;
+		table[i] = static_cast<int>(h);
 	}
 
 	//for (auto x : table)
 	//{
-	//	cout << x << " ";
+	//	std::cout << x << " ";
 	//}
 
 	int depth_level;
@@ -542,16 +572,24 @@ bool algorithm::warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat
 			shift = table[depth_level];
 			if (j + shift - S >= 0 && j + shift - S < size.width)
 			{
-				I_syn.at<cv::Vec3b>(i, j + shift - S) = I_ref.at<cv::Vec3b>(i, j);
-				D_syn.at<uchar>(i, j + shift - S) = D_ref.at<uchar>(i, j);
+				if (I_syn.at<cv::Vec3b>(i, j + shift - S)[0] == 0 && I_syn.at<cv::Vec3b>(i, j + shift - S)[1] == 0 && I_syn.at<cv::Vec3b>(i, j + shift - S)[2] == 0)
+				{
+					I_syn.at<cv::Vec3b>(i, j + shift - S) = I_ref.at<cv::Vec3b>(i, j);
+					D_syn.at<uchar>(i, j + shift - S) = D_ref.at<uchar>(i, j);
+				}
+				else if (D_syn.at<uchar>(i, j + shift - S) < D_ref.at<uchar>(i, j))
+				{
+					I_syn.at<cv::Vec3b>(i, j + shift - S) = I_ref.at<cv::Vec3b>(i, j);
+					D_syn.at<uchar>(i, j + shift - S) = D_ref.at<uchar>(i, j);
+				}
 			}
 		}
 
 	// test
-	//cv::imshow("texture", I_syn);
+	//cv::imshow("after 3D warping", I_syn);
 	//cv::imshow("depth", D_syn);
 
-	return S > 0 ? true : false;
+	return true;
 }
 
 const cv::Mat algorithm::mask_detection(const cv::Mat & input)
