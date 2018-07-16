@@ -59,6 +59,8 @@ public:
 	
 	const cv::Mat mask_detection(const cv::Mat & input);
 
+	bool post_processing(cv::Mat & I_syn, int distance);
+
 private:
 	int distance;
 	//int direction;
