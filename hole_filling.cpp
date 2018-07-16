@@ -345,7 +345,7 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 	cv::Size size = I_syn.size();
 	//int threshold = 20; //深度差阈值，可调
 
-	int k1, k2;
+	int k1=0, k2=0;
 	for (int i = 0; i < size.height; i++)
 		for (int j = 0; j < size.width; j++)
 		{
@@ -398,7 +398,7 @@ bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I
 	if (flag) //flag==true, 空洞出现在右边
 	{
 		for (int i = 0; i < size.height; i++)
-			for (int j = 0; j < size.width; j++)
+			for (int j = 1; j < size.width; j++)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
 					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
@@ -407,7 +407,7 @@ bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I
 	else
 	{
 		for (int i = 0; i < size.height; i++)
-			for (int j = size.width; j > 0; j--)
+			for (int j = size.width-2; j > 0; j--)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
 					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 1);
@@ -622,7 +622,7 @@ bool algorithm::post_processing(cv::Mat & I_syn, int distance)
 	cv::Size size = I_syn.size();
 	if (distance > 0)
 		for (int i = 0; i < size.height; i++)
-			for (int j = 0; j < size.width; j++)
+			for (int j = 1; j < size.width; j++)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
 				{
@@ -631,7 +631,7 @@ bool algorithm::post_processing(cv::Mat & I_syn, int distance)
 			}
 	else
 		for (int i = 0; i < size.height; i++)
-			for (int j = size.width - 1; j >= 0; j--)
+			for (int j = size.width - 2; j >= 0; j--)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
 				{

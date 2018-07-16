@@ -24,7 +24,7 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 		frame++;
 	}
 	//test frame here!!!
-	//frame = 1;
+	frame = 2;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -37,8 +37,10 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 
 void element::writeVideo(std::string texture_filename, std::string depth_filename)
 {
-	cv::VideoWriter texture_writer(texture_filename, -1, 25.0, cv::Size(cols, rows));
-	cv::VideoWriter depth_writer(depth_filename, -1, 25.0, cv::Size(cols, rows), false);
+	int fourcc = CV_FOURCC('I', 'Y', 'U', 'V');
+
+	cv::VideoWriter texture_writer(texture_filename, fourcc, 25.0, cv::Size(cols, rows));
+	cv::VideoWriter depth_writer(depth_filename, fourcc, 25.0, cv::Size(cols, rows), false);
 
 	for (int i = 0; i < frame; i++)
 	{
@@ -57,7 +59,8 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 }
 
 void element::writeVideo(std::string texture_filename) {
-	cv::VideoWriter texture_writer(texture_filename, -1, 25.0, cv::Size(cols, rows));
+	int fourcc = CV_FOURCC('I', 'Y', 'U', 'V');
+	cv::VideoWriter texture_writer(texture_filename, fourcc, 25.0, cv::Size(cols, rows));
 	for (int i = 0; i < frame; i++)
 	{
 		cv::Mat texture_image = texture_video.at(i);
