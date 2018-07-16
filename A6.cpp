@@ -75,20 +75,22 @@ std::vector<cv::Point> A6::findHoleList(cv::Mat &I_syn,cv::Vec3b hole_value){
  * read a image and then fill the region of this map
  * */
 int A6::depthfill(cv::Mat &D_syn,cv::Mat &D_out) {
+
+	element a;
     int  D_width = D_syn.cols;
     int  D_height = D_syn.rows;
-    int  RADIUS = 4;
+    int  radius = 4;
     cv::Point p(0,0);
     int cmin_sum =0;
     int count = 0;
-    for(int x=RADIUS; x < D_width-RADIUS; x+=RADIUS*2+1){
-        for(int y=RADIUS; y < D_height-RADIUS; y+=RADIUS*2+1){
+    for(int x=radius; x < D_width-radius; x+=radius*2+1){
+        for(int y=radius; y < D_height-radius; y+=radius*2+1){
             count+=1;
             p.x = x;
             p.y = y;
             //std::cout<<"x="<<x<<"  y="<<y<<std::endl;
             //get the patch
-            cv::Mat Patch = getPatch(D_syn,p,RADIUS);
+            cv::Mat Patch = a.getPatch(D_syn,p,radius);
             int sampleCount = Patch.cols * Patch.rows;
 
 //            cv::Mat_<uchar> ::iterator begin = Patch.begin<uchar>();
@@ -292,27 +294,28 @@ void A6::setGradientMap(cv::Mat &I_syn,cv::Mat &Src_Map){
     cv::sqrt(soblex_pow+sobley_pow,Src_Map);
 }
 
-void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_fill_map,cv::Mat &I_refine,int RADIUS,cv::Point HoleLoc){
-    cv::Mat I_syn_region = getPatch(I_syn,HoleLoc,RADIUS);
+void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_fill_map,cv::Mat &I_refine,int radius,cv::Point HoleLoc){
+	element a;
+    cv::Mat I_syn_region = a.getPatch(I_syn,HoleLoc,radius);
     //std::cout<<I_syn_region.size<<std::endl;
-    cv::Mat I_fill_region = getPatch(I_fill,HoleLoc,RADIUS);
-    cv::Mat I_map_region = getPatch(I_map,HoleLoc,RADIUS);
-    cv::Mat I_fill_map_region = getPatch(I_fill_map,HoleLoc,RADIUS);
+    cv::Mat I_fill_region = a.getPatch(I_fill,HoleLoc,radius);
+    cv::Mat I_map_region = a.getPatch(I_map,HoleLoc,radius);
+    cv::Mat I_fill_map_region = a.getPatch(I_fill_map,HoleLoc,radius);
 
-    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_syn.cols,I_syn.rows,5,RADIUS);
-//    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_fill.cols,I_fill.rows,5,RADIUS);
+    std::vector<cv::Point> loc = a.FindPoint(HoleLoc,I_syn.cols,I_syn.rows,5,radius);
+//    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_fill.cols,I_fill.rows,5,radius);
 
     int E = 100000;
     int findLoc = 0;
     for (int i=0;i<loc.size();i++){
         //std::cout<<loc[i].x <<"&"<<loc[i].y<<std::endl;
-        if (RADIUS > loc[i].x || loc[i].x >=I_syn.cols-RADIUS || RADIUS > loc[i].y || loc[i].y >= I_syn.rows-RADIUS) continue;
-        //if (RADIUS > loc[i].x || loc[i].x >=I_map.cols-RADIUS || RADIUS > loc[i].y || loc[i].y >= I_map.rows-RADIUS) continue;
-        cv::Mat selected_I_syn_region = getPatch(I_syn,loc[i],RADIUS);
+        if (radius > loc[i].x || loc[i].x >=I_syn.cols-radius || radius > loc[i].y || loc[i].y >= I_syn.rows-radius) continue;
+        //if (radius > loc[i].x || loc[i].x >=I_map.cols-radius || radius > loc[i].y || loc[i].y >= I_map.rows-radius) continue;
+        cv::Mat selected_I_syn_region = a.getPatch(I_syn,loc[i],radius);
         //std::cout<<selected_I_syn_region.size<<std::endl;
-        cv::Mat selected_I_fill_region = getPatch(I_fill,loc[i],RADIUS);
-        cv::Mat selected_I_map_region = getPatch(I_map,loc[i],RADIUS);
-        cv::Mat selected_I_fill_map_region = getPatch(I_fill_map,loc[i],RADIUS);
+        cv::Mat selected_I_fill_region = a.getPatch(I_fill,loc[i],radius);
+        cv::Mat selected_I_map_region = a.getPatch(I_map,loc[i],radius);
+        cv::Mat selected_I_fill_map_region = a.getPatch(I_fill_map,loc[i],radius);
 
 
         cv::Mat syn_diff;
@@ -357,8 +360,8 @@ void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_f
         }
     }
     //std::cout<<loc[findLoc].x<<" "<<loc[findLoc].y<<std::endl;
-    cv::Mat I_refine_region = getPatch(I_refine,HoleLoc,RADIUS);
-    cv::Mat selected_I_syn_region = getPatch(I_syn,loc[findLoc],RADIUS);
+    cv::Mat I_refine_region = a.getPatch(I_refine,HoleLoc,radius);
+    cv::Mat selected_I_syn_region = a.getPatch(I_syn,loc[findLoc],radius);
     I_refine.at<cv::Vec3b>(HoleLoc) = I_fill.at<cv::Vec3b>(loc[findLoc]);
     I_fill.at<cv::Vec3b>(HoleLoc) = I_fill.at<cv::Vec3b>(loc[findLoc]);
     //I_refine_region = selected_I_syn_region.clone();
@@ -372,7 +375,7 @@ void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_f
     //I_refine_region = selected_I_syn_region;
 }
 
-void A6::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int RADIUS){
+void A6::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int radius){
     cv::Vec3b hole_value = (0,0,0);
     std::vector<cv::Point> HoleList = this->findHoleList(I_syn,hole_value);
     this->HoleList = HoleList;
@@ -389,8 +392,8 @@ void A6::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int
     //std::cout<<"I_refine:"<<I_refine.size<<std::endl;
 
     for(auto hole : HoleList){
-        if (RADIUS > hole.x || hole.x >=I_syn.cols-RADIUS || RADIUS > hole.y || hole.y >= I_syn.rows-RADIUS) continue;
-        this->LossFunction(I_syn,I_fill,I_map,I_fill_map,I_refine,RADIUS,hole);
+        if (radius > hole.x || hole.x >=I_syn.cols-radius || radius > hole.y || hole.y >= I_syn.rows-radius) continue;
+        this->LossFunction(I_syn,I_fill,I_map,I_fill_map,I_refine,radius,hole);
         //std::cout<<"processed!"<<hole.x<<"  "<<hole.y << std::endl;
     }
 }
@@ -444,10 +447,11 @@ void A6::generateSprite(std::string t_video_path,std::string d_video_path,std::s
 
 }
 
-void A6::extra_process(cv::Mat &I_syn,cv::Mat &I_refine,int RADIUS){
+void A6::extra_process(cv::Mat &I_syn,cv::Mat &I_refine,int radius){
+	element a;
     for(auto hole : this->HoleList){
-        if (RADIUS > hole.x || hole.x >=I_syn.cols-RADIUS || RADIUS > hole.y || hole.y >= I_syn.rows-RADIUS) continue;
-        cv::Mat hole_region = getPatch(I_syn,hole,RADIUS);
+        if (radius > hole.x || hole.x >=I_syn.cols-radius || radius > hole.y || hole.y >= I_syn.rows-radius) continue;
+        cv::Mat hole_region = a.getPatch(I_syn,hole,radius);
 
         int sum_b = 0;
         int sum_g = 0;
