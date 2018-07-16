@@ -613,3 +613,4 @@ const cv::Mat algorithm::mask_detection(const cv::Mat & input)
 
 	return mask;
 }
+

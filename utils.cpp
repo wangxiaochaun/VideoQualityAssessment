@@ -23,6 +23,8 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 		
 		frame++;
 	}
+	//test for algorithm
+	frame = 10;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -91,6 +93,29 @@ void element::processVideo(const int distance, const int type)
 	}
 }
 
+void element::processVideo(int distance, std::string t_file, std::string d_file)
+{
+	//process the specific video
+	kooper k(t_file, d_file,distance);
+
+	for (int i = 0; i < frame; i++) {
+		cv::Mat I_ref = texture_video.at(i);
+		cv::Mat D_ref = depth_video.at(i);
+		cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3, cv::Scalar(0, 0, 0));
+		cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U, cv::Scalar(0));
+
+		clock_t start = clock();
+
+		I_syn = k.A6Porcess(I_ref, D_ref);
+
+		clock_t ends = clock();
+
+		texture_video.at(i) = I_syn;
+
+	}
+
+}
+
 void element::showVideo()
 {
 	for (auto texture_image : texture_video)
@@ -104,38 +129,6 @@ void element::showVideo()
 		cv::imshow("Video", depth_image);
 		cv::waitKey(30);
 	}
-}
-
-cv::Mat element::getPatch(const cv::Mat & image,const cv::Point& p,int radius){
-assert(radius <= p.x && p.x <image.cols-radius && radius <= p.y && p.y < image.rows-radius);
-
-return image(cv::Range(p.y-radius,p.y+radius+1),cv::Range(p.x-radius,p.x+radius+1));
-
-}
-
-std::vector<cv::Point> element::FindPoint(cv::Point &p,int width, int height,int range,int radius){
-//give a point to calculate the around point of the radius
-std::vector<cv::Point> pointList ;
-
-assert(range%2 !=0 );
-
-int startX =  p.x - ((range-1)/2)*radius;
-int stratY = p.y - ((range-1)/2)*radius;
-
-int startX_end = startX + radius*(range-1);
-int startY_end = stratY + radius*(range-1);
-
-
-for(;startX<=startX_end;startX+=radius){
-for(stratY = p.y - ((range-1)/2)*radius;stratY<=startY_end;stratY+=radius){
-if(startX > width -radius || stratY > height -radius) continue;
-if(startX == p.x && stratY ==p.y) continue;
-if(startX < radius || stratY <radius)continue;
-pointList.push_back(cv::Point(startX,stratY));
-}
-}
-
-return pointList;
 }
 
 

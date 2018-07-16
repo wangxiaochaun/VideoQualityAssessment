@@ -65,6 +65,10 @@ private:
 
 	void setDistance(const int distance) { this->distance = distance; }
 	//void setDirection(const int direction) { this->direction = direction; }
+
+	
+
+	
 public:
 	const int getDistance() { return this->distance; }
 	//const int getDirection() { return this->direction; }

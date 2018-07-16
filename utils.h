@@ -9,6 +9,7 @@
 #include <iostream>
 #include "hole_filling.h"
 #include <cmath>
+#include "kooper.h"
 
 typedef std::vector<cv::Mat> video;
 
@@ -21,9 +22,9 @@ public:
 	void writeVideo(std::string texture_filename, std::string depth_filename);
 	void writeVideo(std::string texture_filename);
 	void processVideo(const int distance, const int type);
+	void processVideo(const int distance, std::string t_file, std::string d_file);
 	const int getFrame() { return frame; }
-	cv::Mat getPatch(const cv::Mat & image,const cv::Point& p,int radius);
-	std::vector<cv::Point> FindPoint(cv::Point &p,int with, int height,int range,int radius);
+	
 
 private:
 	video texture_video, depth_video;

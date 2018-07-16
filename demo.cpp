@@ -9,18 +9,22 @@
 #include "filename.h"
 
 using namespace std;
+const std::string path = "J:\\SubjectDataSet\\QP_pairs\\";
 
 bool process(int fileindex,int qpindex,int qp_t,int qp_d,int warpingscalar,int fillmetod) {
 	filename file;
-	std::string input_d = file.findqpfileName(qpindex, 0, qp_t, fileindex);
-	std::string input_t = file.findqpfileName(qpindex, 1, qp_d, fileindex);
-	std::string outvideo_t = file.getFuLLName(fileindex, qpindex, qp_t, qp_d, warpingscalar, fillmetod);
+	std::string input_d = path+file.findqpfileName(qpindex, 0, qp_t, fileindex);
+	std::string input_t = path+file.findqpfileName(qpindex, 1, qp_d, fileindex);
+	std::string outvideo_t = path+file.getFuLLName(fileindex, qpindex, qp_t, qp_d, warpingscalar, fillmetod);
 
 	element ele;
 
 	ele.readVideo(input_t, input_d);
-	ele.processVideo(warpingscalar, fillmetod);
+	if (fillmetod == 5) ele.processVideo(warpingscalar, input_t, input_d);
+	else ele.processVideo(warpingscalar, fillmetod);
 	ele.writeVideo(outvideo_t);
+
+	return true;
 }
 
 bool unionporcess(int fileindex) {
@@ -43,6 +47,8 @@ bool unionporcess(int fileindex) {
 		}
 	}
 
+	return true;
+
 }
 
 int main()
@@ -59,13 +65,15 @@ int main()
 	filename qpfile;
 	int qpindex = 264;
 	int imagetype = 0;
-	int qplevel = 34;
-	int qplevel2 = 14;
+	int qp_t= 34;
+	int qp_d = 14;
 	int fileindex = 1;
 	int warpingscalar = -25;
 	int fillmethod = 1;
-	std::string file = qpfile.findqpfileName(qpindex, imagetype, qplevel, fileindex);
+	/*std::string file = qpfile.findqpfileName(qpindex, imagetype, qplevel, fileindex);
 	std::string out = qpfile.getFuLLName(fileindex, qpindex, qplevel, qplevel2, warpingscalar, fillmethod);
 	std::cout << out << std::endl;
-	system("pause");
+	system("pause");*/
+
+	process(fileindex, qpindex, qp_t, qp_d, warpingscalar, 5);
 }
