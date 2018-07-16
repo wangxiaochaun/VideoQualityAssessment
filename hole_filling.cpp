@@ -350,7 +350,7 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 		for (int j = 0; j < size.width; j++)
 		{
 			if (I_syn.at<cv::Vec3b>(i, j)[0] == 0 && I_syn.at<cv::Vec3b>(i, j)[1] == 0 && I_syn.at<cv::Vec3b>(i, j)[2] == 0)
-			{
+			{			
 				for (int k = j; k < size.width; k++)
 					if (temp.at<uchar>(i, k) > 5)
 					{
@@ -367,8 +367,9 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, k1);
 				else
 					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, k2);
-			}
+			}			
 		}
+	
 
 
 	//test
@@ -422,8 +423,9 @@ bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I
 bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	warping_1d(I_ref, D_ref, I_syn, D_syn);
-
-
+	
+	
+>>>>>>> upstream/master
 	// ---------------read the images-------------------
 	// colorMat - color picture + border
 	// maskMat - mask picture + border

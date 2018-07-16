@@ -49,7 +49,11 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 		if (i % 50 == 0)
 		{
 			std::cout << "Write " << i << " frame" << std::endl;
+<<<<<<< HEAD
 		}
+=======
+		}	
+>>>>>>> upstream/master
 	}
 
 	texture_writer.release();
@@ -94,8 +98,10 @@ void element::processVideo(const int distance, const int type)
 			break;
 		}
 
+		
 		//clock_t ends = clock();
 
+>>>>>>> upstream/master
 		//std::cout << "Running time of 3D warping (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
 
 		texture_video.at(i) = I_syn;

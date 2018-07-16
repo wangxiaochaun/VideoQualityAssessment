@@ -23,3 +23,4 @@ private:
 	void showVideo();
 	void showAlgorithmType(int type);
 };
+
