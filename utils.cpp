@@ -23,8 +23,8 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 
 		frame++;
 	}
-
-	frame = 1;
+	//test frame here!!!
+	//frame = 1;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -54,6 +54,22 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 
 	texture_writer.release();
 	depth_writer.release();
+}
+
+void element::writeVideo(std::string texture_filename) {
+	cv::VideoWriter texture_writer(texture_filename, -1, 25.0, cv::Size(cols, rows));
+	for (int i = 0; i < frame; i++)
+	{
+		cv::Mat texture_image = texture_video.at(i);
+		cv::Mat depth_image = depth_video.at(i);
+		texture_writer << texture_image;
+		if (i % 50 == 0)
+		{
+			std::cout << "Write " << i << " frame" << std::endl;
+		}
+	}
+
+	texture_writer.release();
 }
 
 void element::processVideo(const int distance, const int type)
