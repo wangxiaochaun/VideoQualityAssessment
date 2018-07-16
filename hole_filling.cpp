@@ -425,7 +425,6 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	warping_1d(I_ref, D_ref, I_syn, D_syn);
 	
 	
->>>>>>> upstream/master
 	// ---------------read the images-------------------
 	// colorMat - color picture + border
 	// maskMat - mask picture + border

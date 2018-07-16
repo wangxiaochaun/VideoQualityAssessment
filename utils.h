@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 #include "hole_filling.h"
+#include <cmath>
+#include "kooper.h"
 
 typedef std::vector<cv::Mat> video;
 
@@ -15,6 +17,7 @@ public:
 	void readVideo(std::string texture_filename, std::string depth_filename);
 	void writeVideo(std::string texture_filename, std::string depth_filename);
 	void processVideo(const int distance, const int type);
+	void processVideo(const int distance, std::string t_file, std::string d_file);
 	const int getFrame() { return frame; }
 
 private:
