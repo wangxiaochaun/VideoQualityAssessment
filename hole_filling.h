@@ -46,18 +46,20 @@ public:
 	cv::Mat computeSSD(const cv::Mat & tmplate, const cv::Mat & source, const cv::Mat & tmplateMask);
 
 	bool Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);	//A1
-	
+
 	bool Fehn_inpainting(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);		//A2
-	
+
 	bool Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);				//A3
-	
+
 	bool Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);				//A4
-	
+
 	bool Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);				//A5
 
 	bool warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn);
-	
+
 	const cv::Mat mask_detection(const cv::Mat & input);
+
+	bool post_processing(cv::Mat & I_syn, int distance);
 
 private:
 	int distance;
@@ -65,10 +67,6 @@ private:
 
 	void setDistance(const int distance) { this->distance = distance; }
 	//void setDirection(const int direction) { this->direction = direction; }
-
-	
-
-	
 public:
 	const int getDistance() { return this->distance; }
 	//const int getDirection() { return this->direction; }

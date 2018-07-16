@@ -263,6 +263,7 @@ cv::Mat algorithm::computeSSD(const cv::Mat& tmplate, const cv::Mat& source, con
 	return result;
 }
 
+// A1 -Fehn_interpolation
 bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	// 这里改变了传入参考视点深度图像的类型（前提是深度图是单通道的）
@@ -292,28 +293,11 @@ bool algorithm::Fehn_interpolation(const cv::Mat & I_ref, const cv::Mat & D_ref,
 
 	cv::Size size = I_syn.size();
 
-	if (getDistance() > 0)
-		for (int i = 0; i < size.height; i++)
-			for (int j = 0; j < size.width; j++)
-			{
-				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
-				{
-					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
-				}
-			}
-	else
-		for (int i = 0; i < size.height; i++)
-			for (int j = size.width - 1; j >= 0; j--)
-			{
-				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
-				{
-					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 1);
-				}
-			}
+	post_processing(I_syn, distance);
 
 	return true;
 }
-
+// A2 -Fehn_inpainting
 bool algorithm::Fehn_inpainting(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	// 本处理相当耗时，大概800ms左右，
@@ -325,6 +309,7 @@ bool algorithm::Fehn_inpainting(const cv::Mat & I_ref, const cv::Mat & D_ref, cv
 	//test
 	//cv::imshow("raw", I_syn);
 
+	cv::medianBlur(I_syn, I_syn, 3);
 	cv::Mat mask = mask_detection(I_syn);
 
 	//clock_t start = clock();
@@ -340,16 +325,15 @@ bool algorithm::Fehn_inpainting(const cv::Mat & I_ref, const cv::Mat & D_ref, cv
 
 	return true;
 }
-
+// A3 - Tanimoto
 bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	// VSRS算法的简化版本，目前是这么做的：首先，对warping后的深度图做后处理（双边滤波）；然后根据深度值选择背景像素修补空洞；最后再用inpainting过一遍（inpainting太过耗时，可以看情况是否采用）
 	warping_1d(I_ref, D_ref, I_syn, D_syn);
 
 	//test
-	cv::imshow("before background filling", I_syn);
+	//cv::imshow("before background filling", I_syn);
 	//cv::imshow("D_syn", D_syn);
-
 	cv::Mat temp = cv::Mat(D_syn.size(), CV_8U);
 
 	// 第三个参数是滤波器大小，过大的滤波器执行效率低，这里取9*9， d=0时，滤波器大小由后面两个高斯核sigma决定；第四、第五是值域和空域滤波核的sigma，一般取大于10
@@ -359,49 +343,65 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 	//cv::imshow("After bilateral filter", temp);
 
 	cv::Size size = I_syn.size();
-	int threshold = 10; //深度差阈值，可调
+	//int threshold = 20; //深度差阈值，可调
 
+	int k1, k2;
 	for (int i = 0; i < size.height; i++)
 		for (int j = 0; j < size.width; j++)
 		{
-			if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
+			if (I_syn.at<cv::Vec3b>(i, j)[0] == 0 && I_syn.at<cv::Vec3b>(i, j)[1] == 0 && I_syn.at<cv::Vec3b>(i, j)[2] == 0)
 			{
-				if (D_syn.at<uchar>(i, j + 3) - D_syn.at<uchar>(i, j - 3) > threshold)
-					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 3);
-				else if (D_syn.at<uchar>(i, j - 3) - D_syn.at<uchar>(i, j + 3) > threshold)
-					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 3);
+				for (int k = j; k < size.width; k++)
+					if (temp.at<uchar>(i, k) > 5)
+					{
+						k1 = k;
+						break;
+					}
+				for (int k = j; k >= 0; k--)
+					if (temp.at<uchar>(i, k) > 5)
+					{
+						k2 = k;
+						break;
+					}
+				if (temp.at<uchar>(i, k1) <= temp.at<uchar>(i, k2))
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, k1);
+				else
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, k2);
 			}
 		}
 
+
 	//test
 	//cv::imshow("after backgroud filling", I_syn);
-
-	cv::Mat mask = mask_detection(I_syn);
-	cv::inpaint(I_syn, mask, I_syn, 3, CV_INPAINT_TELEA);
+	cv::medianBlur(I_syn, I_syn, 3);
+	//cv::Mat mask = mask_detection(I_syn);
+	//cv::inpaint(I_syn, mask, I_syn, 3, CV_INPAINT_TELEA);
 	//test
-	cv::imshow("after backgroud inpainting", I_syn);
+	//cv::imshow("after backgroud inpainting", I_syn);
 
 	return true;
 }
-
+// A4-Muller
 bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	// Muller方法和VSRS一样，依赖于两视点。这里我们只能做简化。其后处理部分和VSRS没有区别。区别在于背景像素填充部分。我认为Muller算法的核心（layer seperation）是确认背景部分是哪一部分，然后用统一的背景像素填充。这样做的好处是避免了inpainting，缺陷如IRCCyN/IVC DIBR image database所示，引入了拉伸（毛线，stretch）效果
 	bool flag = warping_1d(I_ref, D_ref, I_syn, D_syn);
 
 	//test
-	cv::imshow("before hole filling", I_syn);
+	//cv::imshow("before hole filling", I_syn);
+
+	cv::medianBlur(I_syn, I_syn, 3);
 
 	cv::Size size = I_syn.size();
 
 	if (flag) //flag==true, 空洞出现在右边
 	{
 		for (int i = 0; i < size.height; i++)
-				for (int j = 0; j < size.width; j++)
-				{
-					if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
-						I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
-				}
+			for (int j = 0; j < size.width; j++)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
+			}
 	}
 	else
 	{
@@ -418,12 +418,12 @@ bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I
 
 	return true;
 }
-
+// A5-Ndijiki
 bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I_syn, cv::Mat & D_syn)
 {
 	warping_1d(I_ref, D_ref, I_syn, D_syn);
 
-	
+
 	// ---------------read the images-------------------
 	// colorMat - color picture + border
 	// maskMat - mask picture + border
@@ -431,7 +431,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	cv::Mat colorMat;
 	I_syn.copyTo(colorMat);
 	cv::Mat grayMat;
-	cv::Mat maskMat  = mask_detection(colorMat);
+	cv::Mat maskMat = mask_detection(colorMat);
 	cv::bitwise_not(maskMat, maskMat);
 	//test
 	//cv::imshow("maskMat", maskMat);
@@ -454,7 +454,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	contours_t contours; //mask contours
 	hierarchy_t hierarchy; // contours hierarchy
 
-	// priorityMat - priority values for all contour points + border
+						   // priorityMat - priority values for all contour points + border
 	cv::Mat priorityMat(confidenceMat.size(), CV_32FC1); // priority value matrix for each contour point
 
 	cv::Point psiHatP; //psiHatP - point of highest confidence
@@ -471,7 +471,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 
 	cv::Mat templateMask; // mask for template match (3 channel)
 
-	// eroded mask is used to ensure that psiHatQ is not overlapping with target
+						  // eroded mask is used to ensure that psiHatQ is not overlapping with target
 	cv::erode(maskMat, erodedMask, cv::Mat(), cv::Point(-1, -1), RADIUS);
 
 	// main loop
@@ -521,6 +521,8 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 
 	cv::Rect border = cv::Rect(RADIUS, RADIUS, colorMat.size().width - 2 * RADIUS, colorMat.size().height - 2 * RADIUS);
 	I_syn = colorMat(border);
+
+	cv::medianBlur(I_syn, I_syn, 3);
 
 	// test
 	//cv::imshow("final result", I_syn);
@@ -614,3 +616,26 @@ const cv::Mat algorithm::mask_detection(const cv::Mat & input)
 	return mask;
 }
 
+bool algorithm::post_processing(cv::Mat & I_syn, int distance)
+{
+	cv::Size size = I_syn.size();
+	if (distance > 0)
+		for (int i = 0; i < size.height; i++)
+			for (int j = 0; j < size.width; j++)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
+				{
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
+				}
+			}
+	else
+		for (int i = 0; i < size.height; i++)
+			for (int j = size.width - 1; j >= 0; j--)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
+				{
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 1);
+				}
+			}
+	return false;
+}
