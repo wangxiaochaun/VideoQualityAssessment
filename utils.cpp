@@ -24,6 +24,8 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 		frame++;
 	}
 
+	frame = 1;
+
 	std::cout << "Total frames: " << frame << std::endl;
 
 	// test
@@ -44,7 +46,10 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 		cv::Mat depth_image = depth_video.at(i);
 		texture_writer << texture_image;
 		depth_writer << depth_image;
-		std::cout << "Write " << i << " frame" << std::endl;
+		if (i % 50 == 0)
+		{
+			std::cout << "Write " << i << " frame" << std::endl;
+		}	
 	}
 
 	texture_writer.release();
@@ -54,6 +59,8 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 void element::processVideo(const int distance, const int type)
 {
 	algorithm al(distance);
+	showAlgorithmType(type);
+
 	for (int i = 0; i < frame; i++)
 	{
 		cv::Mat I_ref = texture_video.at(i);
@@ -61,21 +68,43 @@ void element::processVideo(const int distance, const int type)
 		cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3, cv::Scalar(0, 0, 0));
 		cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U, cv::Scalar(0));
 
-		clock_t start = clock();
+
+		//clock_t start = clock();
 		switch (type)
 		{
 		case A1:
 			al.Fehn_interpolation(I_ref, D_ref, I_syn, D_syn);
+			break;
+		case A2:
+			al.Fehn_inpainting(I_ref, D_ref, I_syn, D_syn);
+			break;
+		case A3:
+			al.Tanimoto(I_ref, D_ref, I_syn, D_syn);
+			break;
+		case A4:
+			al.Muller(I_ref, D_ref, I_syn, D_syn);
+			break;
+		case A5:
+			al.Ndijiki(I_ref, D_ref, I_syn, D_syn);
+			break;
+		case A7:
+			al.warping_1d(I_ref, D_ref, I_syn, D_syn);
+			break;
 		default:
 			break;
 		}
 		
-		clock_t ends = clock();
+		//clock_t ends = clock();
 
-		std::cout << "Running time of 3D warping (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+		//std::cout << "Running time of 3D warping (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
 
 		texture_video.at(i) = I_syn;
 		depth_video.at(i) = D_syn;
+
+		if (i % 50 == 0)
+		{
+			std::cout << "Processed " << i << " frames." << std::endl;
+		}
 	}
 }
 
@@ -94,36 +123,31 @@ void element::showVideo()
 	}
 }
 
-cv::Mat element::getPatch(const cv::Mat & image,const cv::Point& p,int RADIUS){
-assert(RADIUS <= p.x && p.x <image.cols-RADIUS && RADIUS <= p.y && p.y < image.rows-RADIUS);
-
-return image(cv::Range(p.y-RADIUS,p.y+RADIUS+1),cv::Range(p.x-RADIUS,p.x+RADIUS+1));
-
-}
-
-std::vector<cv::Point> element::FindPoint(cv::Point &p,int width, int height,int range,int RADIUS){
-//give a point to calculate the around point of the Radius
-std::vector<cv::Point> pointList ;
-
-assert(range%2 !=0 );
-
-int startX =  p.x - ((range-1)/2)*RADIUS;
-int stratY = p.y - ((range-1)/2)*RADIUS;
-
-int startX_end = startX + RADIUS*(range-1);
-int startY_end = stratY + RADIUS*(range-1);
-
-
-for(;startX<=startX_end;startX+=RADIUS){
-for(stratY = p.y - ((range-1)/2)*RADIUS;stratY<=startY_end;stratY+=RADIUS){
-if(startX > width -RADIUS || stratY > height -RADIUS) continue;
-if(startX == p.x && stratY ==p.y) continue;
-if(startX < RADIUS || stratY <RADIUS)continue;
-pointList.push_back(cv::Point(startX,stratY));
-}
-}
-
-return pointList;
+void element::showAlgorithmType(int type)
+{
+	switch (type)
+	{
+	case A1:
+		std::cout << "DIBR Algorithm: A1-Fehn_interpolation" << std::endl;
+		break;
+	case A2:
+		std::cout << "DIBR Algorithm: A2-Fehn_inpainting" << std::endl;
+		break;
+	case A3:
+		std::cout << "DIBR Algorithm: A3-Tamino" << std::endl;
+		break;
+	case A4:
+		std::cout << "DIBR Algorithm: A4-Muller" << std::endl;
+		break;
+	case A5:
+		std::cout << "DIBR Algorithm: A5-Ndijsk" << std::endl;
+		break;
+	case A7:
+		std::cout << "DIBR Algorithm: A7-No_holefilling" << std::endl;
+		break;
+	default:
+		break;
+	}
 }
 
 
