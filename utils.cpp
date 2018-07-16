@@ -24,7 +24,7 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 		frame++;
 	}
 	//test for algorithm
-	frame = 10;
+	//frame = 10;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -111,6 +111,8 @@ void element::processVideo(int distance, std::string t_file, std::string d_file)
 		clock_t ends = clock();
 
 		texture_video.at(i) = I_syn;
+
+		std::cout << "Running frames: "<<i<<" of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
 
 	}
 

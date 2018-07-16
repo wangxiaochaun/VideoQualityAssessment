@@ -27,7 +27,7 @@ cv::Mat kooper::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
     algorithm test(this->distance);
 
     cv::Vec3b holevlaue = (0,0,0);
-    clock_t start = clock();
+    //clock_t start = clock();
 
     test.warping_1d(I_ref,D_ref,I_syn,D_syn);
 
@@ -52,9 +52,9 @@ cv::Mat kooper::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
 
     cv::inpaint(I_fill,I_mask,I_final,3, cv::INPAINT_NS);
 
-    clock_t ends = clock();
+    //clock_t ends = clock();
 
-    std::cout << "Running time of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+    //std::cout << "Running time of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
 
     return I_final;
 }

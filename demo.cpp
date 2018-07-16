@@ -30,11 +30,9 @@ bool process(int fileindex,int qpindex,int qp_t,int qp_d,int warpingscalar,int f
 bool unionporcess(int fileindex) {
 	int qpindex[2] = { 264, 265 };
 	int qplevel[2] = { 14,34 };
-	int warpingscalar[4] = { -50,-25,25,50 };
+	int warpingscalar[4] = { -40,-20,20,40 };
 	int fillmethod[3] = { 0,1,2 };
-
 	for (int qp = 0; qp < 2; qp++) {
-
 		//need to generate the pairs of depth and texture qp
 		for (int qp_t = 0; qp_t < 2; qp_t++) {
 			for (int qp_d = 0; qp_d < 2; qp_d++) {
@@ -46,9 +44,7 @@ bool unionporcess(int fileindex) {
 			}
 		}
 	}
-
 	return true;
-
 }
 
 int main()
@@ -68,7 +64,7 @@ int main()
 	int qp_t= 34;
 	int qp_d = 14;
 	int fileindex = 1;
-	int warpingscalar = -25;
+	int warpingscalar = -50;
 	int fillmethod = 1;
 	/*std::string file = qpfile.findqpfileName(qpindex, imagetype, qplevel, fileindex);
 	std::string out = qpfile.getFuLLName(fileindex, qpindex, qplevel, qplevel2, warpingscalar, fillmethod);

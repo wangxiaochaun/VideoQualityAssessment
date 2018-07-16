@@ -542,7 +542,7 @@ bool algorithm::warping_1d(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat
 	//knear = 255; kfar = 0;
 
 	//test
-	std::cout << knear << " " << kfar << std::endl;
+	//std::cout << knear << " " << kfar << std::endl;
 
 	int view_distance = getDistance(); //越小baseline越大，补洞的差异性越好，但是相应的，inpainting花销越大。=200的时候，telea算法
 	int S = 0;
