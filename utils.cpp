@@ -6,7 +6,7 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 	cv::VideoCapture depth_capture(depth_filename);
 
 	frame = 0;
-	
+
 	while (true)
 	{
 		cv::Mat texture_image, depth_image;
@@ -20,11 +20,11 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 
 		texture_video.push_back(texture_image);
 		depth_video.push_back(depth_image);
-		
+
 		frame++;
 	}
-
-	frame = 1;
+	//test frame here!!!
+	frame = 2;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -37,8 +37,10 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 
 void element::writeVideo(std::string texture_filename, std::string depth_filename)
 {
-	cv::VideoWriter texture_writer(texture_filename, -1, 25.0, cv::Size(cols, rows));
-	cv::VideoWriter depth_writer(depth_filename, -1, 25.0, cv::Size(cols, rows), false);
+	int fourcc = CV_FOURCC('I', 'Y', 'U', 'V');
+
+	cv::VideoWriter texture_writer(texture_filename, fourcc, 25.0, cv::Size(cols, rows));
+	cv::VideoWriter depth_writer(depth_filename, fourcc, 25.0, cv::Size(cols, rows), false);
 
 	for (int i = 0; i < frame; i++)
 	{
@@ -54,6 +56,23 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 
 	texture_writer.release();
 	depth_writer.release();
+}
+
+void element::writeVideo(std::string texture_filename) {
+	int fourcc = CV_FOURCC('I', 'Y', 'U', 'V');
+	cv::VideoWriter texture_writer(texture_filename, fourcc, 25.0, cv::Size(cols, rows));
+	for (int i = 0; i < frame; i++)
+	{
+		cv::Mat texture_image = texture_video.at(i);
+		cv::Mat depth_image = depth_video.at(i);
+		texture_writer << texture_image;
+		if (i % 50 == 0)
+		{
+			std::cout << "Write " << i << " frame" << std::endl;
+		}
+	}
+
+	texture_writer.release();
 }
 
 void element::processVideo(const int distance, const int type)
@@ -93,6 +112,7 @@ void element::processVideo(const int distance, const int type)
 		default:
 			break;
 		}
+
 		
 		//clock_t ends = clock();
 
@@ -150,4 +170,28 @@ void element::showAlgorithmType(int type)
 	}
 }
 
+void element::processVideo(int distance, std::string t_file, std::string d_file)
+{
+	//process the specific video
+	kooper k(t_file, d_file, distance);
+
+	for (int i = 0; i < frame; i++) {
+		cv::Mat I_ref = texture_video.at(i);
+		cv::Mat D_ref = depth_video.at(i);
+		cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3, cv::Scalar(0, 0, 0));
+		cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U, cv::Scalar(0));
+
+		clock_t start = clock();
+
+		I_syn = k.A6Porcess(I_ref, D_ref);
+
+		clock_t ends = clock();
+
+		texture_video.at(i) = I_syn;
+
+		std::cout << "Running frames: " << i << " of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+
+	}
+
+}
 

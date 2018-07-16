@@ -345,7 +345,7 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 	cv::Size size = I_syn.size();
 	//int threshold = 20; //深度差阈值，可调
 
-	int k1, k2;
+	int k1=0, k2=0;
 	for (int i = 0; i < size.height; i++)
 		for (int j = 0; j < size.width; j++)
 		{
@@ -370,6 +370,7 @@ bool algorithm::Tanimoto(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat &
 			}			
 		}
 	
+
 
 	//test
 	//cv::imshow("after backgroud filling", I_syn);
@@ -397,16 +398,16 @@ bool algorithm::Muller(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & I
 	if (flag) //flag==true, 空洞出现在右边
 	{
 		for (int i = 0; i < size.height; i++)
-				for (int j = 0; j < size.width; j++)
-				{
-					if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
-						I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
-				}
+			for (int j = 1; j < size.width; j++)
+			{
+				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
+					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j - 1);
+			}
 	}
 	else
 	{
 		for (int i = 0; i < size.height; i++)
-			for (int j = size.width; j > 0; j--)
+			for (int j = size.width-2; j > 0; j--)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK)
 					I_syn.at<cv::Vec3b>(i, j) = I_syn.at<cv::Vec3b>(i, j + 1);
@@ -431,7 +432,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	cv::Mat colorMat;
 	I_syn.copyTo(colorMat);
 	cv::Mat grayMat;
-	cv::Mat maskMat  = mask_detection(colorMat);
+	cv::Mat maskMat = mask_detection(colorMat);
 	cv::bitwise_not(maskMat, maskMat);
 	//test
 	//cv::imshow("maskMat", maskMat);
@@ -454,7 +455,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	contours_t contours; //mask contours
 	hierarchy_t hierarchy; // contours hierarchy
 
-	// priorityMat - priority values for all contour points + border
+						   // priorityMat - priority values for all contour points + border
 	cv::Mat priorityMat(confidenceMat.size(), CV_32FC1); // priority value matrix for each contour point
 
 	cv::Point psiHatP; //psiHatP - point of highest confidence
@@ -471,7 +472,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 
 	cv::Mat templateMask; // mask for template match (3 channel)
 
-	// eroded mask is used to ensure that psiHatQ is not overlapping with target
+						  // eroded mask is used to ensure that psiHatQ is not overlapping with target
 	cv::erode(maskMat, erodedMask, cv::Mat(), cv::Point(-1, -1), RADIUS);
 
 	// main loop
@@ -621,7 +622,7 @@ bool algorithm::post_processing(cv::Mat & I_syn, int distance)
 	cv::Size size = I_syn.size();
 	if (distance > 0)
 		for (int i = 0; i < size.height; i++)
-			for (int j = 0; j < size.width; j++)
+			for (int j = 1; j < size.width; j++)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
 				{
@@ -630,7 +631,7 @@ bool algorithm::post_processing(cv::Mat & I_syn, int distance)
 			}
 	else
 		for (int i = 0; i < size.height; i++)
-			for (int j = size.width - 1; j >= 0; j--)
+			for (int j = size.width - 2; j >= 0; j--)
 			{
 				if (I_syn.at<cv::Vec3b>(i, j)[0] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[1] == COLOR_BLACK && I_syn.at<cv::Vec3b>(i, j)[2] == COLOR_BLACK)
 				{

@@ -3,15 +3,17 @@
 //
 
 #include <opencv2/core/mat.hpp>
-#include "A6.h"
+#include "kooper.h"
 #include "utils.h"
 #include "hole_filling.h"
 
-A6::A6(std::string t_video_path,std::string d_video_path){
+kooper::kooper(std::string t_video_path,std::string d_video_path,int distance){
+	this->distance = distance;
     this->generateSprite(t_video_path,d_video_path,"../","../",10);
+	
 }
 
-cv::Mat A6::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
+cv::Mat kooper::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
     cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3,cv::Scalar(0,0,0));
     cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U,cv::Scalar(0));
 
@@ -22,10 +24,10 @@ cv::Mat A6::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
     cv::Mat I_final = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3,cv::Scalar(255,255,255));
     cv::Mat I_mask = cv::Mat(I_fill.size().height, I_fill.size().width, CV_8U,cv::Scalar(0));
 
-    algorithm test;
+    algorithm test(this->distance);
 
     cv::Vec3b holevlaue = (0,0,0);
-    clock_t start = clock();
+    //clock_t start = clock();
 
     test.warping_1d(I_ref,D_ref,I_syn,D_syn);
 
@@ -50,13 +52,13 @@ cv::Mat A6::A6Porcess(cv::Mat &I_ref,cv::Mat &D_ref){
 
     cv::inpaint(I_fill,I_mask,I_final,3, cv::INPAINT_NS);
 
-    clock_t ends = clock();
+    //clock_t ends = clock();
 
-    std::cout << "Running time of A6 porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+    //std::cout << "Running time of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
 
     return I_final;
 }
-std::vector<cv::Point> A6::findHoleList(cv::Mat &I_syn,cv::Vec3b hole_value){
+std::vector<cv::Point> kooper::findHoleList(cv::Mat &I_syn,cv::Vec3b hole_value){
     std::vector<cv::Point> Holelist;
     for(int row =0 ;row<I_syn.rows;row++){
         for(int col = 0 ;col<I_syn.cols;col++){
@@ -74,21 +76,22 @@ std::vector<cv::Point> A6::findHoleList(cv::Mat &I_syn,cv::Vec3b hole_value){
 /*
  * read a image and then fill the region of this map
  * */
-int A6::depthfill(cv::Mat &D_syn,cv::Mat &D_out) {
+int kooper::depthfill(cv::Mat &D_syn,cv::Mat &D_out) {
+
     int  D_width = D_syn.cols;
     int  D_height = D_syn.rows;
-    int  RADIUS = 4;
+    int  radius = 4;
     cv::Point p(0,0);
     int cmin_sum =0;
     int count = 0;
-    for(int x=RADIUS; x < D_width-RADIUS; x+=RADIUS*2+1){
-        for(int y=RADIUS; y < D_height-RADIUS; y+=RADIUS*2+1){
+    for(int x=radius; x < D_width-radius; x+=radius*2+1){
+        for(int y=radius; y < D_height-radius; y+=radius*2+1){
             count+=1;
             p.x = x;
             p.y = y;
             //std::cout<<"x="<<x<<"  y="<<y<<std::endl;
             //get the patch
-            cv::Mat Patch = getPatch(D_syn,p,RADIUS);
+            cv::Mat Patch = this->getPatch(D_syn,p,radius);
             int sampleCount = Patch.cols * Patch.rows;
 
 //            cv::Mat_<uchar> ::iterator begin = Patch.begin<uchar>();
@@ -133,9 +136,9 @@ int A6::depthfill(cv::Mat &D_syn,cv::Mat &D_out) {
             //std::cout<<centers.cols<<"  "<<centers.rows << std::endl;
 
             //std::cout<<centers.at<float>(0,0)<<std::endl;
-            //std::cout<<centers.at<float>(0,1)<<std::endl;
+            //std::cout<<centers.at<float>(1,0)<<std::endl;
 
-            int center_min = centers.at<float>(0,0)>centers.at<float>(0,1)?centers.at<float>(0,1):centers.at<float>(0,0);
+            int center_min = centers.at<float>(0,0)>centers.at<float>(1,0)?centers.at<float>(1,0):centers.at<float>(0,0);
             cmin_sum += center_min;
             //std::cout<<"cmin="<<center_min<<std::endl;
 
@@ -163,7 +166,7 @@ int A6::depthfill(cv::Mat &D_syn,cv::Mat &D_out) {
     return cmin_sum*1.0f/count;
 }
 
-void A6::spriteUpdate(cv::Mat &D_syn,cv::Mat &I_syn,cv::Mat &D_sprite,cv::Mat &I_sprite,int cmin_median){
+void kooper::spriteUpdate(cv::Mat &D_syn,cv::Mat &I_syn,cv::Mat &D_sprite,cv::Mat &I_sprite,int cmin_median){
     //using the cmin_median to update the picture if the pixel is less than cmin_mdian update it
     for(int row =0;row<D_syn.rows;row++)
     {
@@ -179,7 +182,7 @@ void A6::spriteUpdate(cv::Mat &D_syn,cv::Mat &I_syn,cv::Mat &D_sprite,cv::Mat &I
     this->deleteEdge(D_sprite,I_sprite,1);
 }
 
-void A6::deleteEdge(cv::Mat& D_sprite,cv::Mat& I_sprite,int size){
+void kooper::deleteEdge(cv::Mat& D_sprite,cv::Mat& I_sprite,int size){
     for(int row =0 ;row<D_sprite.rows-1;row++){
         for(int col =0; col<D_sprite.cols-1;col++){
             uchar current = D_sprite.at<uchar>(row,col);
@@ -234,7 +237,7 @@ void A6::deleteEdge(cv::Mat& D_sprite,cv::Mat& I_sprite,int size){
     }
 }
 
-void A6::ImageUpdate(cv::Mat &I_syn,cv::Mat &D_syn,cv::Mat &I_sprite,cv::Mat &D_sprite,double beta,cv::Vec3b hole_value){
+void kooper::ImageUpdate(cv::Mat &I_syn,cv::Mat &D_syn,cv::Mat &I_sprite,cv::Mat &D_sprite,double beta,cv::Vec3b hole_value){
     std::vector<cv::Point> HoleList = this->findHoleList(I_syn,hole_value);
 
 
@@ -248,7 +251,7 @@ void A6::ImageUpdate(cv::Mat &I_syn,cv::Mat &D_syn,cv::Mat &I_sprite,cv::Mat &D_
     }
 }
 
-void A6::initialFill(cv::Mat &I_syn,cv::Mat &I_fill) {
+void kooper::initialFill(cv::Mat &I_syn,cv::Mat &I_fill) {
     I_fill = I_syn.clone();
     cv::Vec3b hole_value = (0, 0, 0);
     //std::cout<<"size = "<<I_syn.size << " cols = " <<I_syn.cols;
@@ -276,7 +279,7 @@ void A6::initialFill(cv::Mat &I_syn,cv::Mat &I_fill) {
 
 }
 
-void A6::setGradientMap(cv::Mat &I_syn,cv::Mat &Src_Map){
+void kooper::setGradientMap(cv::Mat &I_syn,cv::Mat &Src_Map){
     cv::Mat tempImage;
     cv::Mat soblex;
     cv::Mat soblex_pow;
@@ -292,27 +295,28 @@ void A6::setGradientMap(cv::Mat &I_syn,cv::Mat &Src_Map){
     cv::sqrt(soblex_pow+sobley_pow,Src_Map);
 }
 
-void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_fill_map,cv::Mat &I_refine,int RADIUS,cv::Point HoleLoc){
-    cv::Mat I_syn_region = getPatch(I_syn,HoleLoc,RADIUS);
-    //std::cout<<I_syn_region.size<<std::endl;
-    cv::Mat I_fill_region = getPatch(I_fill,HoleLoc,RADIUS);
-    cv::Mat I_map_region = getPatch(I_map,HoleLoc,RADIUS);
-    cv::Mat I_fill_map_region = getPatch(I_fill_map,HoleLoc,RADIUS);
+void kooper::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_fill_map,cv::Mat &I_refine,int radius,cv::Point HoleLoc){
 
-    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_syn.cols,I_syn.rows,5,RADIUS);
-//    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_fill.cols,I_fill.rows,5,RADIUS);
+    cv::Mat I_syn_region = this->getPatch(I_syn,HoleLoc,radius);
+    //std::cout<<I_syn_region.size<<std::endl;
+    cv::Mat I_fill_region = this->getPatch(I_fill,HoleLoc,radius);
+    cv::Mat I_map_region = this->getPatch(I_map,HoleLoc,radius);
+    cv::Mat I_fill_map_region = this->getPatch(I_fill_map,HoleLoc,radius);
+
+    std::vector<cv::Point> loc = this->FindPoint(HoleLoc,I_syn.cols,I_syn.rows,5,radius);
+//    std::vector<cv::Point> loc = FindPoint(HoleLoc,I_fill.cols,I_fill.rows,5,radius);
 
     int E = 100000;
     int findLoc = 0;
     for (int i=0;i<loc.size();i++){
         //std::cout<<loc[i].x <<"&"<<loc[i].y<<std::endl;
-        if (RADIUS > loc[i].x || loc[i].x >=I_syn.cols-RADIUS || RADIUS > loc[i].y || loc[i].y >= I_syn.rows-RADIUS) continue;
-        //if (RADIUS > loc[i].x || loc[i].x >=I_map.cols-RADIUS || RADIUS > loc[i].y || loc[i].y >= I_map.rows-RADIUS) continue;
-        cv::Mat selected_I_syn_region = getPatch(I_syn,loc[i],RADIUS);
+        if (radius > loc[i].x || loc[i].x >=I_syn.cols-radius || radius > loc[i].y || loc[i].y >= I_syn.rows-radius) continue;
+        //if (radius > loc[i].x || loc[i].x >=I_map.cols-radius || radius > loc[i].y || loc[i].y >= I_map.rows-radius) continue;
+        cv::Mat selected_I_syn_region = this->getPatch(I_syn,loc[i],radius);
         //std::cout<<selected_I_syn_region.size<<std::endl;
-        cv::Mat selected_I_fill_region = getPatch(I_fill,loc[i],RADIUS);
-        cv::Mat selected_I_map_region = getPatch(I_map,loc[i],RADIUS);
-        cv::Mat selected_I_fill_map_region = getPatch(I_fill_map,loc[i],RADIUS);
+        cv::Mat selected_I_fill_region = this->getPatch(I_fill,loc[i],radius);
+        cv::Mat selected_I_map_region = this->getPatch(I_map,loc[i],radius);
+        cv::Mat selected_I_fill_map_region = this->getPatch(I_fill_map,loc[i],radius);
 
 
         cv::Mat syn_diff;
@@ -357,8 +361,8 @@ void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_f
         }
     }
     //std::cout<<loc[findLoc].x<<" "<<loc[findLoc].y<<std::endl;
-    cv::Mat I_refine_region = getPatch(I_refine,HoleLoc,RADIUS);
-    cv::Mat selected_I_syn_region = getPatch(I_syn,loc[findLoc],RADIUS);
+    cv::Mat I_refine_region = this->getPatch(I_refine,HoleLoc,radius);
+    cv::Mat selected_I_syn_region = this->getPatch(I_syn,loc[findLoc],radius);
     I_refine.at<cv::Vec3b>(HoleLoc) = I_fill.at<cv::Vec3b>(loc[findLoc]);
     I_fill.at<cv::Vec3b>(HoleLoc) = I_fill.at<cv::Vec3b>(loc[findLoc]);
     //I_refine_region = selected_I_syn_region.clone();
@@ -372,7 +376,7 @@ void A6::LossFunction(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_map,cv::Mat &I_f
     //I_refine_region = selected_I_syn_region;
 }
 
-void A6::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int RADIUS){
+void kooper::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int radius){
     cv::Vec3b hole_value = (0,0,0);
     std::vector<cv::Point> HoleList = this->findHoleList(I_syn,hole_value);
     this->HoleList = HoleList;
@@ -389,13 +393,13 @@ void A6::textrureRefinement(cv::Mat& I_syn,cv::Mat &I_fill,cv::Mat &I_refine,int
     //std::cout<<"I_refine:"<<I_refine.size<<std::endl;
 
     for(auto hole : HoleList){
-        if (RADIUS > hole.x || hole.x >=I_syn.cols-RADIUS || RADIUS > hole.y || hole.y >= I_syn.rows-RADIUS) continue;
-        this->LossFunction(I_syn,I_fill,I_map,I_fill_map,I_refine,RADIUS,hole);
+        if (radius > hole.x || hole.x >=I_syn.cols-radius || radius > hole.y || hole.y >= I_syn.rows-radius) continue;
+        this->LossFunction(I_syn,I_fill,I_map,I_fill_map,I_refine,radius,hole);
         //std::cout<<"processed!"<<hole.x<<"  "<<hole.y << std::endl;
     }
 }
 
-void A6::generateSprite(std::string t_video_path,std::string d_video_path,std::string out_t_path,std::string out_d_path,int count){
+void kooper::generateSprite(std::string t_video_path,std::string d_video_path,std::string out_t_path,std::string out_d_path,int count){
 
     cv::VideoCapture cap_texture;
     cv::VideoCapture cap_depth;
@@ -416,7 +420,7 @@ void A6::generateSprite(std::string t_video_path,std::string d_video_path,std::s
     cv::Mat I_sprite = cv::Mat(height, width,CV_8UC3,cv::Scalar(0,0,0));
     cv::Mat D_sprite = cv::Mat(height, width,CV_8U,cv::Scalar(0));
 
-    algorithm test;
+    algorithm test(this->distance);
 
     for(int i=0;i<count;i++){
 
@@ -444,10 +448,11 @@ void A6::generateSprite(std::string t_video_path,std::string d_video_path,std::s
 
 }
 
-void A6::extra_process(cv::Mat &I_syn,cv::Mat &I_refine,int RADIUS){
+void kooper::extra_process(cv::Mat &I_syn,cv::Mat &I_refine,int radius){
+
     for(auto hole : this->HoleList){
-        if (RADIUS > hole.x || hole.x >=I_syn.cols-RADIUS || RADIUS > hole.y || hole.y >= I_syn.rows-RADIUS) continue;
-        cv::Mat hole_region = getPatch(I_syn,hole,RADIUS);
+        if (radius > hole.x || hole.x >=I_syn.cols-radius || radius > hole.y || hole.y >= I_syn.rows-radius) continue;
+        cv::Mat hole_region = this->getPatch(I_syn,hole,radius);
 
         int sum_b = 0;
         int sum_g = 0;
@@ -473,4 +478,36 @@ void A6::extra_process(cv::Mat &I_syn,cv::Mat &I_refine,int RADIUS){
         I_refine.at<cv::Vec3b>(hole)[1] = sum_g / count;
         I_refine.at<cv::Vec3b>(hole)[2] = sum_r / count;
     }
+}
+
+cv::Mat kooper::getPatch(const cv::Mat & image, const cv::Point& p, int radius) {
+	assert(radius <= p.x && p.x <image.cols - radius && radius <= p.y && p.y < image.rows - radius);
+
+	return image(cv::Range(p.y - radius, p.y + radius + 1), cv::Range(p.x - radius, p.x + radius + 1));
+
+}
+
+std::vector<cv::Point> kooper::FindPoint(cv::Point &p, int width, int height, int range, int radius) {
+	//give a point to calculate the around point of the radius
+	std::vector<cv::Point> pointList;
+
+	assert(range % 2 != 0);
+
+	int startX = p.x - ((range - 1) / 2)*radius;
+	int stratY = p.y - ((range - 1) / 2)*radius;
+
+	int startX_end = startX + radius * (range - 1);
+	int startY_end = stratY + radius * (range - 1);
+
+
+	for (; startX <= startX_end; startX += radius) {
+		for (stratY = p.y - ((range - 1) / 2)*radius; stratY <= startY_end; stratY += radius) {
+			if (startX > width - radius || stratY > height - radius) continue;
+			if (startX == p.x && stratY == p.y) continue;
+			if (startX < radius || stratY <radius)continue;
+			pointList.push_back(cv::Point(startX, stratY));
+		}
+	}
+
+	return pointList;
 }
