@@ -9,7 +9,7 @@
 #include "filename.h"
 
 using namespace std;
-const std::string path = "J:\\SubjectDataSet\\QP_pairs\\";
+const std::string path = "QP_pairs\\";
 
 bool process(int fileindex, int qpindex, int qp_t, int qp_d, int warpingscalar, int fillmetod) {
 	filename file;
@@ -38,15 +38,18 @@ bool unionporcess(int fileindex) {
 	int qpindex[2] = { 264, 265 };
 	int qplevel[2] = { 14,34 };
 	int warpingscalar[4] = { -40,-20,20,40 };
-	int fillmethod[4] = {0,2,3,6};
+	int fillmethod[2] = {1, 4};
+	int percentage = 1;
 	for (int qp = 0; qp < 2; qp++) {
 		//need to generate the pairs of depth and texture qp
 		for (int qp_t = 0; qp_t < 2; qp_t++) {
 			for (int qp_d = 0; qp_d < 2; qp_d++) {
 				for (int w = 0; w < 4; w++) {
-					for (int fill = 0; fill < 3; fill++) {
+					for (int fill = 0; fill < 2; fill++) {
 						process(fileindex, qpindex[qp], qplevel[qp_t], qplevel[qp_d], warpingscalar[w], fillmethod[fill]);
 					}
+					std::cout << "Processing percentage: " << (double)(percentage / 32.0) * 100 << "%." << std::endl;
+					percentage++;
 				}
 			}
 		}
@@ -54,34 +57,13 @@ bool unionporcess(int fileindex) {
 	return true;
 }
 
-int main()
+int main(int argc, char ** argv)
 {
-	//element aaaa;
-	//int tv_height, tv_width, dv_height, dv_width;
-	//int tv_frame, dv_frame;
-	//aaaa.readVideo("balloons_x264_qp14.mkv", "depth_balloons_x264_qp34.mkv");
-	//aaaa.processVideo(50, A1); //25, 50
-	//aaaa.writeVideo("balloons_x264_qp14_50.avi", "depth_balloons_x264_qp34_50.avi");
-	//
-	//system("pause");
-
-	//filename qpfile;
-	//int qpindex = 264;
-	//int imagetype = 0;
-	//int qp_t = 34;
-	//int qp_d = 14;
-	//int fileindex = 1;
-	//int warpingscalar = -50;
-	//int fillmethod = 1;
-	///*std::string file = qpfile.findqpfileName(qpindex, imagetype, qplevel, fileindex);
-	//std::string out = qpfile.getFuLLName(fileindex, qpindex, qplevel, qplevel2, warpingscalar, fillmethod);
-	//std::cout << out << std::endl;
-	//system("pause");*/
-
-	//process(fileindex, qpindex, qp_t, qp_d, warpingscalar, 5);
-
-	for (int i = 1; i < 13; i++) {
-		unionporcess(i);
-	}
+	std::cout << "---------------------------------" << std::endl;
+	std::cout << "| VRTS Synthesized Video Dataset|" << std::endl;
+	std::cout << "|       Processing start!       |" << std::endl;
+	std::cout << "---------------------------------" << std::endl;
+	// 每个机器处理不同的条目
+	unionporcess(1);
 
 }

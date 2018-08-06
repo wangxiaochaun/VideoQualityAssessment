@@ -24,7 +24,7 @@ void element::readVideo(std::string texture_filename, std::string depth_filename
 		frame++;
 	}
 	//test frame here!!!
-	frame = 2;
+	//frame = 2;
 
 	std::cout << "Total frames: " << frame << std::endl;
 
@@ -48,10 +48,10 @@ void element::writeVideo(std::string texture_filename, std::string depth_filenam
 		cv::Mat depth_image = depth_video.at(i);
 		texture_writer << texture_image;
 		depth_writer << depth_image;
-		if (i % 50 == 0)
-		{
-			std::cout << "Write " << i << " frame" << std::endl;
-		}	
+		//if (i % 50 == 0)
+		//{
+		//	std::cout << "Write " << i << " frame" << std::endl;
+		//}	
 	}
 
 	texture_writer.release();
@@ -66,10 +66,10 @@ void element::writeVideo(std::string texture_filename) {
 		cv::Mat texture_image = texture_video.at(i);
 		cv::Mat depth_image = depth_video.at(i);
 		texture_writer << texture_image;
-		if (i % 50 == 0)
-		{
-			std::cout << "Write " << i << " frame" << std::endl;
-		}
+		//if (i % 50 == 0)
+		//{
+		//	std::cout << "Write " << i << " frame" << std::endl;
+		//}
 	}
 
 	texture_writer.release();
@@ -121,10 +121,10 @@ void element::processVideo(const int distance, const int type)
 		texture_video.at(i) = I_syn;
 		depth_video.at(i) = D_syn;
 
-		if (i % 50 == 0)
-		{
-			std::cout << "Processed " << i << " frames." << std::endl;
-		}
+		//if (i % 50 == 0)
+		//{
+		//	std::cout << "Processed " << i << " frames." << std::endl;
+		//}
 	}
 }
 
@@ -162,6 +162,9 @@ void element::showAlgorithmType(int type)
 	case A5:
 		std::cout << "DIBR Algorithm: A5-Ndijsk" << std::endl;
 		break;
+	case A6:
+		std::cout << "DIBR Algorithm: A6-Kopper" << std::endl;
+		break;
 	case A7:
 		std::cout << "DIBR Algorithm: A7-No_holefilling" << std::endl;
 		break;
@@ -174,6 +177,7 @@ void element::processVideo(int distance, std::string t_file, std::string d_file)
 {
 	//process the specific video
 	kooper k(t_file, d_file, distance);
+	std::cout << "DIBR Algorithm: A6-Kopper" << std::endl;
 
 	for (int i = 0; i < frame; i++) {
 		cv::Mat I_ref = texture_video.at(i);
@@ -181,15 +185,15 @@ void element::processVideo(int distance, std::string t_file, std::string d_file)
 		cv::Mat I_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8UC3, cv::Scalar(0, 0, 0));
 		cv::Mat D_syn = cv::Mat(I_ref.size().height, I_ref.size().width, CV_8U, cv::Scalar(0));
 
-		clock_t start = clock();
+		/*clock_t start = clock();*/
 
 		I_syn = k.A6Porcess(I_ref, D_ref);
 
-		clock_t ends = clock();
+		/*clock_t ends = clock();*/
 
 		texture_video.at(i) = I_syn;
 
-		std::cout << "Running frames: " << i << " of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;
+		/*std::cout << "Running frames: " << i << " of kooper porcess (ms): " << static_cast<double>(ends - start) / CLOCKS_PER_SEC * 1000 << std::endl;*/
 
 	}
 

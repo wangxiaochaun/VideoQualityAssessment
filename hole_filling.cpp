@@ -430,6 +430,7 @@ bool algorithm::Ndijiki(const cv::Mat & I_ref, const cv::Mat & D_ref, cv::Mat & 
 	// maskMat - mask picture + border
 	// grayMat - gray picture + border
 	cv::Mat colorMat;
+	cv::medianBlur(I_syn, I_syn, 3);
 	I_syn.copyTo(colorMat);
 	cv::Mat grayMat;
 	cv::Mat maskMat = mask_detection(colorMat);

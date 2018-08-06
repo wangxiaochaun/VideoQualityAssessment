@@ -5,12 +5,9 @@
 
 
 // Patch raduius
-#define RADIUS 32
+#define RADIUS 50
 // The maximum number of pixels aroud a specified point on the target outline
 #define BORDER_RADIUS 4
-// Direction 0-left, 1-right
-#define WARPING_LEFT -1
-#define WARPING_RIGHT 1
 
 
 class algorithm
